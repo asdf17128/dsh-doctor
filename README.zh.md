@@ -151,7 +151,14 @@ npx dsh-doctor --quiet || echo "升级 dsh 前先检查一下你的 patch"
 
 所有结论都来自这两者的差异，所以能把问题归因到**你自己的 patch**，而不是上游默认值。此外还会读取 profile 的 `package.json` 和各层 `cordis.patch.yml`。
 
-除 `--fix` 外，工具不会写入 Harness home；任何情况下都不会加载插件，也不会执行配置里的 `!!js` 表达式。
+任何情况下都不会加载插件，也不会执行配置里的 `!!js` 表达式。
+
+关于"只读"这件事有两个必须说清的例外：
+
+- `--fix` 是会写的，这是设计如此——只动被标记的那个 `config:` 块，写前留 `.bak`。
+- 合成 profile 是 dsh 自己的动作，而 dsh 在一个 profile 首次被使用时会落地模板。
+  所以如果你的 `$DSH_HOME` 里还没有任何 profile，跑一次会留下 `profiles/<name>/`
+  ——是 dsh 建的不是本工具建的，但指向全新目录前值得知道。
 
 ## 环境要求
 

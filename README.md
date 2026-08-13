@@ -154,7 +154,15 @@ It shells out to dsh's own composition:
 
 Every finding is a diff between those two, so the report can attribute a change to *your* patches rather than to an upstream default. It also reads the profile's `package.json` and `cordis.patch.yml` files.
 
-Except for `--fix`, it never writes to your Harness home. It never boots a plugin and never evaluates the `!!js` expressions in your config.
+It never boots a plugin and never evaluates the `!!js` expressions in your config.
+
+Two caveats about writes, since "read-only" is easy to overstate:
+
+- `--fix` writes, by design — into the flagged `config:` block only, `.bak` first.
+- Composing a profile is dsh's own operation, and dsh materialises a template
+  the first time a profile is used. So running this against a `$DSH_HOME` that
+  has no profiles yet will leave `profiles/<name>/` behind — created by dsh, not
+  by us, but worth knowing before you point it at a pristine home.
 
 ## Requirements
 
