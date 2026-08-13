@@ -83,10 +83,33 @@ dsh-doctor · profile web · 130 entries (25 disabled)
 | `entry-removed` | warn | 被你的 patch 层移除的官方条目 |
 | `entry-toggled` / `entry-added` | info | 与官方 profile 的其他差异，让改动可见 |
 
+## explain 模式
+
+配置健康的人只会看到「no problems found」，这句话没告诉他任何东西。`--explain`
+用来回答「我这套 dsh 到底装了什么」：
+
+```
+Your harness: 130 entries, 103 active, 25 disabled, 2 conditional
+
+  Web UI                  32
+  Tools                   18  (16 off)
+  Sessions & history      11
+  Agent loop               5  (1 off)
+  ...
+
+Conditional (2) — enablement is decided at mount time, not here
+  bash-sandbox             !!js process.platform === 'win32'
+  pwsh-sandbox             !!js process.platform !== 'win32'
+```
+
+`disabled:` 是 `!!js` 表达式的条目会被单独列为 **conditional**，而不是压成布尔值——
+它到底开不开取决于启动时的机器，本工具不会执行你的配置去猜这个答案。
+
 ## 用法
 
 ```sh
 npx dsh-doctor                      # 检查 web profile
+npx dsh-doctor --explain            # 描述这棵树，而不是检查它
 npx dsh-doctor --profile headless   # 指定 profile
 npx dsh-doctor --verbose            # 显示 info 级别提示
 npx dsh-doctor --json               # 机器可读输出

@@ -17,6 +17,7 @@ import { checkToggles, summarize } from "../src/checks/tree.js";
 import { checkPlugins } from "../src/checks/plugins.js";
 import { checkToolCollisions } from "../src/checks/tools.js";
 import { renderText, renderJson } from "../src/report.js";
+import { renderExplain } from "../src/explain.js";
 
 const HELP = `dsh-doctor — find what your dsh patches silently broke
 
@@ -28,6 +29,7 @@ Options
   --json             machine-readable output
   --verbose          include informational notes
   --quiet            only print when something is wrong
+  --explain          describe what your harness is made of, instead of checking
   --offline          skip registry lookups (no network)
   -h, --help         show this help
 
@@ -38,7 +40,7 @@ Exit codes
 `;
 
 function parseArgs(argv) {
-  const opts = { profile: "web", json: false, verbose: false, quiet: false, offline: false };
+  const opts = { profile: "web", json: false, verbose: false, quiet: false, offline: false, explain: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "-h" || a === "--help") opts.help = true;
@@ -46,6 +48,7 @@ function parseArgs(argv) {
     else if (a === "--verbose" || a === "-v") opts.verbose = true;
     else if (a === "--quiet" || a === "-q") opts.quiet = true;
     else if (a === "--offline") opts.offline = true;
+    else if (a === "--explain") opts.explain = true;
     else if (a === "--profile") opts.profile = argv[++i];
     else if (a.startsWith("--profile=")) opts.profile = a.slice("--profile=".length);
     else {
@@ -107,6 +110,11 @@ async function main() {
       `dsh-doctor: profile "${opts.profile}" produced an empty tree — is the name right?\n`,
     );
     return 2;
+  }
+
+  if (opts.explain) {
+    process.stdout.write(renderExplain(composed, summarize(composed)));
+    return 0;
   }
 
   const patches = readUserPatches(opts.profile);

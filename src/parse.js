@@ -30,7 +30,11 @@ function unquote(raw) {
  * @typedef {object} Entry
  * @property {string} id            entry id (the handle patches target)
  * @property {string} name          plugin package name
- * @property {boolean} disabled     whether the composed tree disables it
+ * @property {boolean} disabled     whether the composed tree disables it outright
+ * @property {string|null} disabledExpr
+ *   the raw `!!js` expression when enablement is decided at mount time (e.g.
+ *   `!!js process.platform === 'win32'`), in which case `disabled` is false but
+ *   the real answer depends on the machine. Never evaluated.
  * @property {string|null} layer    `# ==` provenance comment covering this row
  * @property {Map<string,string>} config  dotted key path -> literal value text
  * @property {number} line          1-based line number in the dump
@@ -68,6 +72,7 @@ export function parseDump(text) {
         id: unquote(entryMatch[1]),
         name: "",
         disabled: false,
+        disabledExpr: null,
         layer,
         config: new Map(),
         line: i + 1,
@@ -90,7 +95,13 @@ export function parseDump(text) {
       const key = m[2].trim();
       const value = m[3];
       if (key === "name") current.name = unquote(value);
-      else if (key === "disabled") current.disabled = unquote(value) === "true";
+      else if (key === "disabled") {
+        const raw = unquote(value);
+        // `disabled: !!js <expr>` is decided at mount time; recording it as a
+        // flat boolean would make the report claim a certainty it does not have.
+        if (raw.startsWith("!!js")) current.disabledExpr = raw;
+        else current.disabled = raw === "true";
+      }
       else if (key === "config") inConfig = true;
       continue;
     }

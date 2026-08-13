@@ -83,10 +83,34 @@ dsh-doctor · profile web · 130 entries (25 disabled)
 | `entry-removed` | warn | A shipped entry your patch layer removed |
 | `entry-toggled` / `entry-added` | info | Every other difference from the shipped profile, so the diff is visible |
 
+## Explain mode
+
+A healthy install gets "no problems found", which tells you nothing about what
+you are running. `--explain` answers that instead:
+
+```
+Your harness: 130 entries, 103 active, 25 disabled, 2 conditional
+
+  Web UI                  32
+  Tools                   18  (16 off)
+  Sessions & history      11
+  Agent loop               5  (1 off)
+  ...
+
+Conditional (2) — enablement is decided at mount time, not here
+  bash-sandbox             !!js process.platform === 'win32'
+  pwsh-sandbox             !!js process.platform !== 'win32'
+```
+
+Entries whose `disabled:` is a `!!js` expression are reported as *conditional*
+rather than collapsed to a boolean — the answer depends on the machine that
+boots, and the tool never evaluates your config to find out.
+
 ## Usage
 
 ```sh
 npx dsh-doctor                      # check the web profile
+npx dsh-doctor --explain            # describe the tree instead of checking it
 npx dsh-doctor --profile headless   # another profile
 npx dsh-doctor --verbose            # include informational notes
 npx dsh-doctor --json               # machine-readable

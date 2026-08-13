@@ -33,6 +33,21 @@ export function checkToggles(composed, defaults) {
       });
       continue;
     }
+    if (entry.disabledExpr || base.disabledExpr) {
+      if (entry.disabledExpr !== base.disabledExpr) {
+        findings.push({
+          rule: "entry-toggled",
+          severity: "info",
+          entry: entry.id,
+          plugin: entry.name,
+          title: `"${entry.id}" enablement changed to a runtime condition`,
+          detail: `Now: ${entry.disabledExpr ?? (entry.disabled ? "disabled" : "enabled")}. Default: ${base.disabledExpr ?? (base.disabled ? "disabled" : "enabled")}.`,
+          data: {},
+          fix: null,
+        });
+      }
+      continue;
+    }
     if (entry.disabled !== base.disabled) {
       findings.push({
         rule: "entry-toggled",
