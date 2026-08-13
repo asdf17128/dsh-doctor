@@ -1,0 +1,38 @@
+{
+  "name": "dsh-doctor",
+  "version": "0.1.0",
+  "description": "Health check for your DeepSeek Harness (dsh) profile \u2014 finds config fields your patches silently dropped, dead patches, and unmaintained plugins.",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek",
+    "deepseek-harness",
+    "harness",
+    "agent",
+    "cordis",
+    "doctor",
+    "lint"
+  ],
+  "type": "module",
+  "bin": {
+    "dsh-doctor": "bin/dsh-doctor.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "README.zh.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PLACEHOLDER/dsh-doctor.git"
+  },
+  "dependencies": {}
+}
