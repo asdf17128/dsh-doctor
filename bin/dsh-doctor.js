@@ -8,12 +8,14 @@
  */
 
 import process from "node:process";
+import { join } from "node:path";
 import { captureDumps, readUserPatches, readProfileManifest, dshHome } from "../src/dump.js";
 import { parseDump } from "../src/parse.js";
 import { checkClobber } from "../src/checks/clobber.js";
 import { checkDeadPatches } from "../src/checks/dead-patch.js";
 import { checkToggles, summarize } from "../src/checks/tree.js";
 import { checkPlugins } from "../src/checks/plugins.js";
+import { checkToolCollisions } from "../src/checks/tools.js";
 import { renderText, renderJson } from "../src/report.js";
 
 const HELP = `dsh-doctor — find what your dsh patches silently broke
@@ -113,6 +115,7 @@ async function main() {
     ...checkClobber(composed, defaults),
     ...checkDeadPatches(composed, patches),
     ...(await checkPlugins(manifest, composed, { offline: opts.offline })),
+    ...checkToolCollisions(join(dshHome(), "profiles", opts.profile), composed),
     ...checkToggles(composed, defaults),
   ];
 

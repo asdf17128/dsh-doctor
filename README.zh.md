@@ -1,5 +1,7 @@
 # dsh-doctor
 
+[![ci](https://github.com/asdf17128/dsh-doctor/actions/workflows/ci.yml/badge.svg)](https://github.com/asdf17128/dsh-doctor/actions/workflows/ci.yml)
+
 **查出你的 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) patch 悄悄改坏了什么。**
 
 [English](README.md) | 中文
@@ -75,6 +77,7 @@ dsh-doctor · profile web · 130 entries (25 disabled)
 |---|---|---|
 | `config-clobber` | error | patch 因为没重写而丢掉的默认配置字段 |
 | `dead-patch` | error | patch 指向树里不存在的 entry id（带拼写纠正建议） |
+| `tool-collision` | error | 两个已挂载插件注册了同名工具——dsh 会直接拒绝启动 |
 | `plugin-not-mounted` | warn | 装进 profile 但根本没被加载的插件 |
 | `plugin-stale` | warn | 超过 180 天没发新版的第三方插件 |
 | `entry-removed` | warn | 被你的 patch 层移除的官方条目 |

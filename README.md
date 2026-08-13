@@ -1,5 +1,7 @@
 # dsh-doctor
 
+[![ci](https://github.com/asdf17128/dsh-doctor/actions/workflows/ci.yml/badge.svg)](https://github.com/asdf17128/dsh-doctor/actions/workflows/ci.yml)
+
 **Find what your [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) patches silently broke.**
 
 English | [中文](README.zh.md)
@@ -75,6 +77,7 @@ dsh-doctor · profile web · 130 entries (25 disabled)
 |---|---|---|
 | `config-clobber` | error | Default config fields your patch dropped by not restating them |
 | `dead-patch` | error | A patch targeting an entry id that is not in the tree (with a did-you-mean) |
+| `tool-collision` | error | Two mounted plugins registering the same tool name — dsh refuses to start |
 | `plugin-not-mounted` | warn | A plugin installed into the profile that nothing ever loads |
 | `plugin-stale` | warn | A third-party plugin with no npm release in 180+ days |
 | `entry-removed` | warn | A shipped entry your patch layer removed |
