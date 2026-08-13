@@ -54,6 +54,34 @@ function parseArgs(argv) {
   return opts;
 }
 
+/**
+ * Turn a failed `dsh` invocation into one actionable line.
+ *
+ * dsh reports a bad profile by throwing, so its stderr leads with the source
+ * frame that raised. The message we want is the `Error:` line further down —
+ * quoting the frame instead would tell the user to reinstall a working dsh.
+ */
+function explainDshFailure(err, profile) {
+  if (err?.code === "ENOENT") {
+    return (
+      `no \`dsh\` on PATH and none in ./node_modules/.bin.\n` +
+      `  Install it:     npm i @deepseek-ai/dsh\n` +
+      `  Harness home:   ${dshHome()}`
+    );
+  }
+  const stderr = String(err?.stderr ?? "");
+  const errorLine = stderr
+    .split("\n")
+    .map((l) => l.trim())
+    .find((l) => l.startsWith("Error:"));
+  if (errorLine) {
+    const message = errorLine.replace(/^Error:\s*/, "").replace(/^dsh:\s*/, "");
+    return `dsh could not compose profile "${profile}" — ${message}`;
+  }
+  const fallback = String(err?.message ?? err).trim().split("\n")[0];
+  return `could not run dsh for profile "${profile}" (${fallback})\n  Harness home: ${dshHome()}`;
+}
+
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   if (opts.help) {
@@ -65,12 +93,7 @@ async function main() {
   try {
     dumps = await captureDumps(opts.profile);
   } catch (err) {
-    const msg = String(err?.stderr || err?.message || err).trim().split("\n")[0];
-    process.stderr.write(
-      `dsh-doctor: could not run dsh (${msg})\n` +
-        `  Install it first:  npm i @deepseek-ai/dsh\n` +
-        `  Harness home:      ${dshHome()}\n`,
-    );
+    process.stderr.write(`dsh-doctor: ${explainDshFailure(err, opts.profile)}\n`);
     return 2;
   }
 
