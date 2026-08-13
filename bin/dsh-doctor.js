@@ -18,6 +18,7 @@ import { checkPlugins } from "../src/checks/plugins.js";
 import { checkToolCollisions } from "../src/checks/tools.js";
 import { renderText, renderJson } from "../src/report.js";
 import { renderExplain } from "../src/explain.js";
+import { applyFixes } from "../src/fix.js";
 
 const HELP = `dsh-doctor — find what your dsh patches silently broke
 
@@ -30,6 +31,7 @@ Options
   --verbose          include informational notes
   --quiet            only print when something is wrong
   --explain          describe what your harness is made of, instead of checking
+  --fix              restate config fields your patch dropped (writes, keeps a .bak)
   --offline          skip registry lookups (no network)
   -h, --help         show this help
 
@@ -40,7 +42,7 @@ Exit codes
 `;
 
 function parseArgs(argv) {
-  const opts = { profile: "web", json: false, verbose: false, quiet: false, offline: false, explain: false };
+  const opts = { profile: "web", json: false, verbose: false, quiet: false, offline: false, explain: false, fix: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "-h" || a === "--help") opts.help = true;
@@ -49,6 +51,7 @@ function parseArgs(argv) {
     else if (a === "--quiet" || a === "-q") opts.quiet = true;
     else if (a === "--offline") opts.offline = true;
     else if (a === "--explain") opts.explain = true;
+    else if (a === "--fix") opts.fix = true;
     else if (a === "--profile") opts.profile = argv[++i];
     else if (a.startsWith("--profile=")) opts.profile = a.slice("--profile=".length);
     else {
@@ -131,6 +134,25 @@ async function main() {
   if (manifest) {
     const deps = Object.keys(manifest.json.dependencies ?? {});
     summary.thirdPartyPlugins = deps.filter((d) => !d.startsWith("@deepseek-ai/"));
+  }
+
+  if (opts.fix) {
+    const results = applyFixes(findings, patches);
+    const applied = results.flatMap((r) => r.applied);
+    const skipped = results.flatMap((r) => r.skipped);
+    if (applied.length === 0 && skipped.length === 0) {
+      process.stdout.write("dsh-doctor: nothing to fix\n");
+      return 0;
+    }
+    for (const r of results) {
+      if (r.applied.length) {
+        process.stdout.write(`restored ${r.applied.length} field(s) in ${r.file} (backup: ${r.file}.bak)\n`);
+        for (const a of r.applied) process.stdout.write(`  + ${a}\n`);
+      }
+      for (const s of r.skipped) process.stdout.write(`  ? ${s} — restate this one by hand\n`);
+    }
+    process.stdout.write("\nRe-run dsh-doctor to confirm.\n");
+    return skipped.length ? 1 : 0;
   }
 
   const hasError = findings.some((f) => f.severity === "error");

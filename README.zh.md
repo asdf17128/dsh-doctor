@@ -113,6 +113,7 @@ npx dsh-doctor --explain            # 描述这棵树，而不是检查它
 npx dsh-doctor --profile headless   # 指定 profile
 npx dsh-doctor --verbose            # 显示 info 级别提示
 npx dsh-doctor --json               # 机器可读输出
+npx dsh-doctor --fix                # 自动把被抹掉的字段补回去
 npx dsh-doctor --offline            # 跳过 npm registry 查询
 npx dsh-doctor --quiet              # 只在有问题时输出
 ```
@@ -125,6 +126,22 @@ npx dsh-doctor --quiet              # 只在有问题时输出
 npx dsh-doctor --quiet || echo "升级 dsh 前先检查一下你的 patch"
 ```
 
+## `--fix`
+
+`--fix` 会把 patch 丢掉的字段按官方默认值补回同一个 `config:` 块：
+
+```diff
+  - id: session-title
+    config:
+      fallbackMaxWords: 12
++     fallbackMaxBytes: 40
++     maxTitleBytes: 80
+```
+
+只在这个块内部改动——注释、顺序、其他条目全部逐字节不变——写之前先在旁边生成
+`.bak`。嵌套路径会列出来让你手动处理而不是猜着写；`dead-patch` 永远不自动修，
+因为"改名还是删掉"是你的判断。
+
 ## 原理
 
 直接复用 dsh 自己的合成结果：
@@ -134,7 +151,7 @@ npx dsh-doctor --quiet || echo "升级 dsh 前先检查一下你的 patch"
 
 所有结论都来自这两者的差异，所以能把问题归因到**你自己的 patch**，而不是上游默认值。此外还会读取 profile 的 `package.json` 和各层 `cordis.patch.yml`。
 
-工具不会写入 Harness home，不会加载任何插件，也不会执行配置里的 `!!js` 表达式。
+除 `--fix` 外，工具不会写入 Harness home；任何情况下都不会加载插件，也不会执行配置里的 `!!js` 表达式。
 
 ## 环境要求
 

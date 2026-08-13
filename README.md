@@ -114,6 +114,7 @@ npx dsh-doctor --explain            # describe the tree instead of checking it
 npx dsh-doctor --profile headless   # another profile
 npx dsh-doctor --verbose            # include informational notes
 npx dsh-doctor --json               # machine-readable
+npx dsh-doctor --fix                # restate the dropped fields for you
 npx dsh-doctor --offline            # skip npm registry lookups
 npx dsh-doctor --quiet              # print only when something is wrong
 ```
@@ -126,6 +127,24 @@ Useful in CI, or as a pre-upgrade check:
 npx dsh-doctor --quiet || echo "review your patches before upgrading dsh"
 ```
 
+## `--fix`
+
+`--fix` restates the fields a patch dropped, writing them back into the same
+`config:` block with the values the shipped profile declared:
+
+```diff
+  - id: session-title
+    config:
+      fallbackMaxWords: 12
++     fallbackMaxBytes: 40
++     maxTitleBytes: 80
+```
+
+It edits inside that block only — comments, ordering and every other entry stay
+byte-identical — and writes a `.bak` beside the file first. A nested key path is
+reported for you to restate by hand rather than guessed at, and `dead-patch`
+findings are never auto-fixed because renaming versus deleting is your call.
+
 ## How it works
 
 It shells out to dsh's own composition:
@@ -135,7 +154,7 @@ It shells out to dsh's own composition:
 
 Every finding is a diff between those two, so the report can attribute a change to *your* patches rather than to an upstream default. It also reads the profile's `package.json` and `cordis.patch.yml` files.
 
-It never writes to your Harness home, never boots a plugin, and never evaluates the `!!js` expressions in your config.
+Except for `--fix`, it never writes to your Harness home. It never boots a plugin and never evaluates the `!!js` expressions in your config.
 
 ## Requirements
 
