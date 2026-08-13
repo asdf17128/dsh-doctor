@@ -11,19 +11,31 @@
  * plugin), which is what lets this check answer the question the failure
  * leaves open: which packages collide.
  *
- * Extraction is deliberately conservative. We scan for `defineTool(` and take
- * the first `name:` literal in the window that follows, so a dynamic or
- * computed name is skipped rather than guessed at. Missing a collision is
- * acceptable; inventing one is not.
+ * Extraction matches the *shape* of a tool definition rather than a call to
+ * `defineTool(`. Real published plugins wrap the call —
+ *
+ *   const register = (tool) => ctx.tools.register(defineTool(tool))
+ *   register({ name: 'browse', description: '…', parameters: {…} })
+ *
+ * — so anchoring on the call site missed `browse`, `screenshot` and `pdf` in
+ * one of the three plugins tested, which are exactly the generic names most
+ * likely to collide. Requiring a literal `name` alongside `description` and
+ * either `parameters` or `execute` in the same object recovers them without
+ * matching the unrelated `{ name, variables }` records a plugin registers with
+ * other services.
+ *
+ * A computed name is still skipped rather than guessed at: missing a collision
+ * is recoverable, inventing one is not.
  */
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
-const DEFINE_TOOL_RE = /defineTool\s*\(\s*\{/g;
-const NAME_RE = /name\s*:\s*(['"`])([A-Za-z_][A-Za-z0-9_-]*)\1/;
-/** How far past `defineTool({` the name may sit before we give up. */
-const NAME_WINDOW = 400;
+const NAME_RE = /name\s*:\s*(['"`])([A-Za-z_][A-Za-z0-9_-]*)\1/g;
+const DESCRIPTION_RE = /description\s*:/;
+const BODY_RE = /(execute\s*[(:]|parameters\s*:)/;
+/** How much of the object literal after `name:` we inspect for the rest of the shape. */
+const NAME_WINDOW = 600;
 const MAX_FILE_BYTES = 2 * 1024 * 1024;
 const SKIP_DIRS = new Set(["node_modules", ".bin", ".pnpm", "test", "tests", "__tests__"]);
 
@@ -50,12 +62,11 @@ function toolNamesIn(pkgDir) {
       try {
         if (statSync(path).size > MAX_FILE_BYTES) continue;
         const src = readFileSync(path, "utf8");
-        DEFINE_TOOL_RE.lastIndex = 0;
+        NAME_RE.lastIndex = 0;
         let m;
-        while ((m = DEFINE_TOOL_RE.exec(src))) {
+        while ((m = NAME_RE.exec(src))) {
           const window = src.slice(m.index, m.index + NAME_WINDOW);
-          const name = NAME_RE.exec(window);
-          if (name) names.add(name[2]);
+          if (DESCRIPTION_RE.test(window) && BODY_RE.test(window)) names.add(m[2]);
         }
       } catch {
         // Unreadable file: skip it rather than fail the run.

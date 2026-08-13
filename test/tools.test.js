@@ -100,3 +100,55 @@ export function apply(ctx) {
 `);
   assert.deepEqual(checkToolCollisions(profile, composed), []);
 });
+
+// Regression: dsh-cloudflare-browser-run (a real published plugin) wraps the
+// registration, so `defineTool({` never appears next to the name literal.
+// Anchoring on the call site missed browse/screenshot/pdf entirely.
+const wrapped = `import { defineTool } from "@deepseek-ai/dsh-tools";
+export function apply(ctx) {
+  const register = (tool) => { ctx.tools.register(defineTool(tool)) };
+  register({
+    name: 'browse',
+    description: 'Fetch a page as markdown',
+    parameters: { url: { type: 'string' } },
+  });
+}
+`;
+
+test("tool names survive a wrapped registration helper", (t) => {
+  const { root, profile } = fixture({
+    "acme-browser": wrapped,
+    "acme-scraper": wrapped,
+  });
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+
+  const composed = parseDump(`- id: a
+  name: 'acme-browser'
+- id: b
+  name: 'acme-scraper'
+`);
+  const findings = checkToolCollisions(profile, composed);
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].data.tool, "browse");
+});
+
+// A plugin may register unrelated {name, ...} records with other services;
+// those must not be mistaken for tools.
+test("non-tool records with a name field are not counted", (t) => {
+  const shellEnv = `export function apply(ctx) {
+  ctx.shellEnv.register({
+    name: 'vision-toolkit',
+    variables: { DSH_VISION_MODEL: { description: 'Vision model name' } },
+  });
+}
+`;
+  const { root, profile } = fixture({ "acme-a": shellEnv, "acme-b": shellEnv });
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+
+  const composed = parseDump(`- id: a
+  name: 'acme-a'
+- id: b
+  name: 'acme-b'
+`);
+  assert.deepEqual(checkToolCollisions(profile, composed), []);
+});
