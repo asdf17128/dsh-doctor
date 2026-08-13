@@ -6,6 +6,8 @@
 
 ```sh
 npx dsh-doctor
+# 或者直接从源码跑，不需要等 npm 发布：
+npx github:asdf17128/dsh-doctor
 ```
 
 只读、零配置、零依赖。

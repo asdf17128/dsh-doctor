@@ -6,6 +6,8 @@ English | [中文](README.zh.md)
 
 ```sh
 npx dsh-doctor
+# or straight from source, no npm release needed:
+npx github:asdf17128/dsh-doctor
 ```
 
 Read-only. No config, no signup, no dependencies.
