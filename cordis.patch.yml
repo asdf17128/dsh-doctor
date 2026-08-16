@@ -1,0 +1,9 @@
+# dsh-doctor bundle layer: registers the `config_doctor` tool.
+# Loaded by `dsh plugin --profile <name> add dsh-doctor`.
+# Read-only — it shells out to `dsh --dump-config` and never writes.
+- insert:
+    - id: dsh-doctor
+      name: 'dsh-doctor/plugin'
+      config:
+        profile: web
+        offline: false

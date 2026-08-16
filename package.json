@@ -20,6 +20,8 @@
   "files": [
     "bin",
     "src",
+    "plugin",
+    "cordis.patch.yml",
     "README.md",
     "README.zh.md"
   ],
@@ -38,5 +40,23 @@
   "homepage": "https://github.com/asdf17128/dsh-doctor#readme",
   "bugs": {
     "url": "https://github.com/asdf17128/dsh-doctor/issues"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "exports": {
+    ".": "./src/audit.js",
+    "./plugin": "./plugin/index.js",
+    "./package.json": "./package.json"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-tools": "*"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh-tools": {
+      "optional": true
+    }
   }
 }

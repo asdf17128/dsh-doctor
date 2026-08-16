@@ -71,6 +71,20 @@ dsh-doctor · profile web · 130 entries (25 disabled)
 2 error
 ```
 
+## As a dsh plugin
+
+Installed into a profile, dsh-doctor registers a `config_doctor` tool so the
+agent can inspect the configuration it is itself running under:
+
+```sh
+dsh plugin --profile web add dsh-doctor
+```
+
+Then ask it — "why isn't my session-title setting taking effect?" — and it
+answers from the composed tree instead of guessing. Read-only; `--fix` stays
+CLI-only, because rewriting your patch file is not something an agent should do
+from a chat turn.
+
 ## Checks
 
 | Rule | Severity | What it catches |

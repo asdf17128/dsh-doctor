@@ -71,6 +71,18 @@ dsh-doctor · profile web · 130 entries (25 disabled)
 2 error
 ```
 
+## 作为 dsh 插件使用
+
+装进 profile 后，dsh-doctor 会注册一个 `config_doctor` 工具，让 agent 能检查
+它自己正跑在什么配置上：
+
+```sh
+dsh plugin --profile web add dsh-doctor
+```
+
+然后直接问它「我改的 session-title 怎么没生效」，它会从合成树里给答案而不是猜。
+只读；`--fix` 保持只在 CLI 里可用——改写你的 patch 文件不该由 agent 在一轮对话里做。
+
 ## 检查项
 
 | 规则 | 级别 | 检出什么 |
