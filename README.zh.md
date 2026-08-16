@@ -172,6 +172,25 @@ npx dsh-doctor --quiet || echo "升级 dsh 前先检查一下你的 patch"
   所以如果你的 `$DSH_HOME` 里还没有任何 profile，跑一次会留下 `profiles/<name>/`
   ——是 dsh 建的不是本工具建的，但指向全新目录前值得知道。
 
+## 安装与卸载
+
+当 CLI 用不需要安装，`npx dsh-doctor` 直接跑。
+
+当插件用：
+
+```sh
+dsh plugin --profile web add github:asdf17128/dsh-doctor   # 安装
+dsh plugin --profile web remove dsh-doctor                 # 卸载
+```
+
+卸载后 `config_doctor` 工具消失，不留任何残留——这个插件从不写入你的 Harness home。
+
+## 兼容性
+
+基于 `@deepseek-ai/dsh` **0.1.0-rc.5** 验证。dsh 处于 developer preview，会有破坏性
+变更；检查逻辑读的是 `--dump-config` 的输出，所以那个格式一旦变动会最先受影响。
+如果新版 dsh 下报出奇怪结果，提 issue 我来定位差异。
+
 ## 环境要求
 
 Node 18+，以及一个可用的 `dsh`（优先用本地 `node_modules/.bin/dsh`，否则用 `PATH` 上的）。

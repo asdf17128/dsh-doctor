@@ -178,6 +178,27 @@ Two caveats about writes, since "read-only" is easy to overstate:
   has no profiles yet will leave `profiles/<name>/` behind — created by dsh, not
   by us, but worth knowing before you point it at a pristine home.
 
+## Install and uninstall
+
+As a CLI, nothing to install — `npx dsh-doctor` runs it.
+
+As a plugin:
+
+```sh
+dsh plugin --profile web add github:asdf17128/dsh-doctor   # install
+dsh plugin --profile web remove dsh-doctor                 # uninstall
+```
+
+Removing it drops the `config_doctor` tool and leaves nothing behind: the plugin
+never writes to your Harness home.
+
+## Compatibility
+
+Verified against `@deepseek-ai/dsh` **0.1.0-rc.5**. dsh is in developer preview
+and ships breaking changes; the checks read `--dump-config` output, so a change
+to that format is what would break them first. Open an issue if a newer dsh
+reports something odd and I will pin down the difference.
+
 ## Requirements
 
 Node 18+ and a working `dsh` (local `node_modules/.bin/dsh` is preferred, otherwise one on `PATH`).
